@@ -23,12 +23,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        DrawUtil.resetDensity(this);
         mWeightValueTwo = findViewById(R.id.tv_user_weight_value_two);
         mWeightRulerView = findViewById(R.id.ruler_weight);
 
-        mWeightRulerView.setParam(DrawUtil.dip2px(4f), DrawUtil.dip2px(32f), DrawUtil.dip2px(24f),
-                DrawUtil.dip2px(14f), DrawUtil.dip2px(9f), DrawUtil.sp2px(20f));
-        mWeightRulerView.initViewParam(mWeight, 0, 1440, 10);
+        mWeightRulerView.setParam(DrawUtil.dip2px(1f), DrawUtil.dip2px(8f), DrawUtil.dip2px(4),
+                DrawUtil.dip2px(0), DrawUtil.dip2px(9f), DrawUtil.sp2px(10f));
+        mWeightRulerView.initViewParam(mWeight, 0, 60 * 24, 60 * 20f, 10);
         mWeightRulerView.setValueChangeListener(new DecimalScaleRulerView.OnValueChangeListener() {
             @Override
             public void onValueChange(String value) {

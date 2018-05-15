@@ -2,6 +2,7 @@ package view;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -40,7 +41,9 @@ public class DecimalScaleRulerView extends View {
     private Paint mLinePaint;
 
     private int mTotalLine;
+    private int mEffLine;//有效的长度
     private int mMaxOffset;
+    private int mEffOffset;//有效的偏移量
     private float mOffset; // 默认尺起始点在屏幕中心, offset是指尺起始点的偏移值
     private int mLastX, mMove;
     private OnValueChangeListener mListener;
@@ -72,12 +75,12 @@ public class DecimalScaleRulerView extends View {
 
         mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mTextPaint.setTextSize(DrawUtil.sp2px(16));
-        mTextPaint.setColor(0X80222222);
+        mTextPaint.setColor(Color.WHITE);
         mTextHeight = getFontHeight(mTextPaint);
 
         mLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mLinePaint.setStrokeWidth(mLineWidth);
-        mLinePaint.setColor(0X80222222);
+        mLinePaint.setColor(Color.WHITE);
     }
 
     public void setParam(int itemSpacing, int maxLineHeight, int middleLineHeight, int minLineHeight, int textMarginTop, int textSize) {
@@ -89,14 +92,15 @@ public class DecimalScaleRulerView extends View {
         mTextPaint.setTextSize(textSize);
     }
 
-    public void initViewParam(float defaultValue, float minValue, float maxValue, int spanValue) {
+    public void initViewParam(float defaultValue, float minValue, float maxValue, float effValue, int spanValue) {
         this.mValue = defaultValue;
         this.mMaxValue = maxValue;
         this.mMinValue = minValue;
         this.mPerSpanValue = spanValue;
         this.mTotalLine = (int) (maxValue * 10 - minValue * 10) / spanValue + 1;
+        this.mEffLine = (int) (effValue * 10 - minValue * 10) / spanValue + 1;
         mMaxOffset = -(mTotalLine - 1) * mItemSpacing;
-
+        mEffOffset = -(mEffLine - 1) * mItemSpacing;
         mOffset = (minValue - defaultValue) / spanValue * mItemSpacing * 10;
         invalidate();
         setVisibility(VISIBLE);
@@ -143,9 +147,15 @@ public class DecimalScaleRulerView extends View {
             } else if (i % 30 == 0) {
                 height = mMiddleLineHeight;
             } else {
-                height = 0;
+                height = mMinLineHeight;
             }
-
+            if (i>mEffLine){
+                mLinePaint.setColor(Color.GRAY);
+                mTextPaint.setColor(Color.GRAY);
+            }else {
+                mLinePaint.setColor(Color.WHITE);
+                mTextPaint.setColor(Color.WHITE);
+            }
             canvas.drawLine(left, srcPointY, left, height + srcPointY, mLinePaint);
             String format = "";
             if (i % 60 == 0) { // 大指标,要标注文字
@@ -208,8 +218,8 @@ public class DecimalScaleRulerView extends View {
 
     private void countMoveEnd() {
         mOffset -= mMove;
-        if (mOffset <= mMaxOffset) {
-            mOffset = mMaxOffset;
+        if (mOffset <= mEffOffset) {
+            mOffset = mEffOffset;
         } else if (mOffset >= 0) {
             mOffset = 0;
         }
@@ -225,8 +235,8 @@ public class DecimalScaleRulerView extends View {
 
     private void changeMoveAndValue() {
         mOffset -= mMove;
-        if (mOffset <= mMaxOffset) {
-            mOffset = mMaxOffset;
+        if (mOffset <= mEffOffset) {
+            mOffset = mEffOffset;
             mMove = 0;
             mScroller.forceFinished(true);
         } else if (mOffset >= 0) {
